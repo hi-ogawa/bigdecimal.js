@@ -6,6 +6,9 @@ node -r esbuild-register misc/codemod-label-bigint.ts src/bigdecimal.ts src/bigd
 
 # replace bigint with JSBI
 node -r esbuild-register misc/codemod-jsbi.ts src/bigdecimal-label-bigint.ts src/bigdecimal-jsbi.ts
+
+# bundle with jsbi
+pnpm compile:jsbi
 ```
 
 ## todo
