@@ -1331,7 +1331,7 @@ export class BigDecimal {
         if (JSBI.greaterThan(value, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) || JSBI.lessThan(value, JSBI.BigInt(Number.MIN_SAFE_INTEGER))) {
             return BigDecimal.INFLATED;
         }
-        return Number(value);
+        return JSBI.toNumber(value);
     }
 
     /** @internal */
@@ -3430,7 +3430,7 @@ export class BigDecimal {
      */
     private static bigIntToBigDecimal(bigInt: JSBI, qsign: number, scale: number): BigDecimal {
         if (JSBI.lessThanOrEqual(bigInt, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) && JSBI.greaterThanOrEqual(bigInt, JSBI.BigInt(Number.MIN_SAFE_INTEGER))) {
-            const numberForm = Number(bigInt);
+            const numberForm = JSBI.toNumber(bigInt);
             return new BigDecimal(null, qsign * numberForm, scale, 0);
         } else {
             return new BigDecimal(
@@ -3447,7 +3447,7 @@ export class BigDecimal {
      */
     private static bigIntToCompactValue(bigInt: JSBI, qsign: number): number {
         if (JSBI.lessThanOrEqual(bigInt, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) && JSBI.greaterThanOrEqual(bigInt, JSBI.BigInt(Number.MIN_SAFE_INTEGER))) {
-            return qsign * Number(bigInt);
+            return qsign * JSBI.toNumber(bigInt);
         } else {
             return BigDecimal.INFLATED;
         }
@@ -3543,12 +3543,12 @@ export class BigDecimal {
         let mq = JSBI.divide(bdividend, JSBI.BigInt(ldivisor));
         let mr: number;
 
-        const bDividendNumber = Number(bdividend);
+        const bDividendNumber = JSBI.toNumber(bdividend);
 
         if (Number.isSafeInteger(bDividendNumber)) {
             mr = bDividendNumber % ldivisor;
         } else {
-            mr = Number(JSBI.remainder(bdividend, JSBI.BigInt(ldivisor)));
+            mr = JSBI.toNumber(JSBI.remainder(bdividend, JSBI.BigInt(ldivisor)));
         }
 
         // record remainder is zero or not
@@ -4025,12 +4025,12 @@ export class BigDecimal {
         let mq = JSBI.divide(bdividend, JSBI.BigInt(ldivisor));
         let r: number;
 
-        const bDividendNumber = Number(bdividend);
+        const bDividendNumber = JSBI.toNumber(bdividend);
 
         if (Number.isSafeInteger(bDividendNumber)) {
             r = bDividendNumber % ldivisor;
         } else {
-            r = Number(JSBI.remainder(bdividend, JSBI.BigInt(ldivisor)));
+            r = JSBI.toNumber(JSBI.remainder(bdividend, JSBI.BigInt(ldivisor)));
         }
 
         // record remainder is zero or not

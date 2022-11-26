@@ -9,11 +9,16 @@ node -r esbuild-register misc/codemod-jsbi.ts src/bigdecimal-label-bigint.ts src
 
 # bundle with jsbi
 pnpm compile:jsbi
+
+# test
+npx mocha --require source-map-support/register test/add.js
 ```
 
 ## todo
 
 - [ ] write codemod
+  - [x] type check
+  - [ ] maybe original code has incorrect typing (e.g. `this.intVal!` having `null` where `bigint` is expected)
 - [ ] test jsbi port
 - [ ] benchmark
 - [ ] bundle jsbi

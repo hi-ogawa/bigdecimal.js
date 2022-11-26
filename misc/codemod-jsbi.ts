@@ -195,9 +195,10 @@ function transform(source: string, j: JSCodeshift): string {
   }
 
   //
-  // fix redundant BigInt.valueOf
+  // fix unsupported JSBI.valueOf
   //
   //   x.valueOf()  ⇒  x
+  //   Number(x)    ⇒  x.toNumber()
   //
   for (const p of $j.find(j.CallExpression).paths()) {
     const { callee, arguments: args } = p.value;
@@ -209,6 +210,19 @@ function transform(source: string, j: JSCodeshift): string {
     ) {
       if (isBigInt(callee.object)) {
         p.replace(callee.object);
+      }
+    }
+  }
+  for (const p of $j.find(j.CallExpression).paths()) {
+    const { callee, arguments: args } = p.value;
+    if (j.Identifier.check(callee) && callee.name === "Number") {
+      if (args.length === 1 && isBigInt(args[0])) {
+        p.replace(
+          j.callExpression(
+            j.memberExpression(JSBI_ID, j.identifier("toNumber")),
+            args
+          )
+        );
       }
     }
   }
