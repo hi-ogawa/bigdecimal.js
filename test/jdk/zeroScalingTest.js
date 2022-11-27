@@ -1,18 +1,17 @@
-'use strict';
+'use strict';;
+const JSBI = require("jsbi");
 const { Big, MC, MathContext, RoundingMode } = require('../../lib/bigdecimal.js');
 const chai = require('chai');
 chai.should();
 
-// native bigint required
-describe.skip('Zero scaling JDK', function () {
-    return;
+describe('Zero scaling JDK', function () {
 
     const zeros = new Array(23);
     for (let i = 0; i < 21; i++) {
-        zeros[i] = Big(0n, i - 10);
+        zeros[i] = Big(JSBI.BigInt("0"), i - 10);
     }
-    zeros[21] = Big(0n, -2147483648);
-    zeros[22] = Big(0n, 2147483647);
+    zeros[21] = Big(JSBI.BigInt("0"), -2147483648);
+    zeros[22] = Big(JSBI.BigInt("0"), 2147483647);
     const longEnough = MC(50, RoundingMode.UNNECESSARY);
     const contexts = [
         MC(0, RoundingMode.UNNECESSARY),
@@ -28,7 +27,7 @@ describe.skip('Zero scaling JDK', function () {
     it('add tests', function () {
         for (const zero1 of zeros) {
             for (const zero2 of zeros) {
-                const expected = Big(0n, Math.max(zero1.scale(), zero2.scale()));
+                const expected = Big(JSBI.BigInt("0"), Math.max(zero1.scale(), zero2.scale()));
                 zero1.add(zero2).equals(expected).should.be.true;
                 zero1.add(zero2, MathContext.UNLIMITED).equals(expected).should.be.true;
                 zero1.add(zero2, longEnough).equals(expected).should.be.true;
@@ -68,7 +67,7 @@ describe.skip('Zero scaling JDK', function () {
     it('subtract tests', function () {
         for (const zero1 of zeros) {
             for (const zero2 of zeros) {
-                const expected = Big(0n, Math.max(zero1.scale(), zero2.scale()));
+                const expected = Big(JSBI.BigInt("0"), Math.max(zero1.scale(), zero2.scale()));
                 zero1.subtract(zero2).equals(expected).should.be.true;
                 zero1.subtract(zero2, MathContext.UNLIMITED).equals(expected).should.be.true;
                 zero1.subtract(zero2, longEnough).equals(expected).should.be.true;
@@ -118,7 +117,7 @@ describe.skip('Zero scaling JDK', function () {
 
         for (const zero1 of zeros) {
             for (const value of values) {
-                const expected = Big(0n, Math.trunc(Math.min(Math.max(zero1.scale() + value.scale(), -2147483648), 2147483647)));
+                const expected = Big(JSBI.BigInt("0"), Math.trunc(Math.min(Math.max(zero1.scale() + value.scale(), -2147483648), 2147483647)));
 
                 zero1.multiply(value).equals(expected).should.be.true;
                 zero1.multiply(value, MathContext.UNLIMITED).equals(expected).should.be.true;
@@ -132,7 +131,7 @@ describe.skip('Zero scaling JDK', function () {
 
         for (const one of ones) {
             for (const zero of zeros) {
-                const expected = Big(0n, Math.trunc(Math.min(Math.max(zero.scale() - one.scale(), -2147483648), 2147483647)));
+                const expected = Big(JSBI.BigInt("0"), Math.trunc(Math.min(Math.max(zero.scale() - one.scale(), -2147483648), 2147483647)));
 
                 zero.divideWithMathContext(one).equals(expected).should.be.true;
                 zero.divideWithMathContext(one, MathContext.UNLIMITED).equals(expected).should.be.true;

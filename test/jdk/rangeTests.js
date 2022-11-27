@@ -1,4 +1,5 @@
-'use strict';
+'use strict';;
+const JSBI = require("jsbi");
 const { Big, MathContext } = require('../../lib/bigdecimal.js');
 const chai = require('chai');
 chai.should();
@@ -79,28 +80,28 @@ describe('Range JDK', function () {
 
     it('roundingConstructor test', function () {
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             7, MathContext.DECIMAL64);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             0, MathContext.DECIMAL64);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             -7, MathContext.DECIMAL64);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             7, MathContext.DECIMAL128);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             177, MathContext.DECIMAL128);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             177, MathContext.DECIMAL32);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             177, MathContext.UNLIMITED);
         testRoundingFromBigInteger(
-            BigInt('85070591730234615847396907784232501249'),
+            JSBI.BigInt('85070591730234615847396907784232501249'),
             0, MathContext.UNLIMITED);
     });
 

@@ -1,4 +1,5 @@
-'use strict';
+'use strict';;
+const JSBI = require("jsbi");
 const { Big, MC, MathContext, RoundingMode } = require('../../lib/bigdecimal.js');
 const chai = require('chai');
 const { results, value } = require('./divideTestNumbers');
@@ -114,8 +115,8 @@ describe('Divide JDK', function () {
         const cMinus = c.negate();
 
         // Ad hoc tests
-        const d = Big(BigInt('-37361671119238118911893939591735'), 10);
-        const e = Big(BigInt('74723342238476237823787879183470'), 15);
+        const d = Big(JSBI.BigInt('-37361671119238118911893939591735'), 10);
+        const e = Big(JSBI.BigInt('74723342238476237823787879183470'), 15);
 
         const testCases = [
             [a, b, Big(RoundingMode.UP, 3), Big('3.142')],
