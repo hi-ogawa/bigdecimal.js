@@ -14,4 +14,4 @@ jobs:
       - run: pnpm i
       - run: pnpm compile:jsbi
       - name: mocha
-        run: npx mocha --require source-map-support/register -t 0 'test/**/*.js'
+        run: PROGRESS=1000 npx mocha --require source-map-support/register -t 0 'test/**/*.js'

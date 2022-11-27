@@ -7,7 +7,11 @@ chai.should();
 describe('Pow test', function () {
 
     it('should calculate pow correctly', function () {
-        for (const test of testCases) {
+        for (let i = 0; i < testCases.length; i++) {
+            if (process.env["PROGRESS"] && i % Number(process.env["PROGRESS"]) === 0) {
+                console.error(`[progress] ${i}/${testCases.length}`);
+            }
+            const test = testCases[i];
             const powOp = () => {
                 return Big(test.args[0]).pow(
                     test.args[1],
