@@ -14,16 +14,6 @@ pnpm compile:jsbi
 npx mocha --require source-map-support/register test/add.js
 ```
 
-## todo
-
-- [ ] write codemod
-  - [x] type check
-  - [ ] maybe original code has incorrect typing (e.g. `this.intVal!` having `null` where `bigint` is expected)
-- [ ] test jsbi port
-- [ ] benchmark
-- [ ] bundle jsbi
-- [ ] publish
-
 ## references
 
 - https://github.com/GoogleChromeLabs/jsbi
