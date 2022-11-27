@@ -1052,7 +1052,7 @@ export class BigDecimal {
                 let drop = prec - mcp;
                 while (drop > 0) {
                     scl = BigDecimal.checkScaleNonZero(scl - drop);
-                    rb = BigDecimal.divideAndRoundByTenPow(rb!, drop, mode);
+                    rb = BigDecimal.divideAndRoundByTenPow(rb ?? JSBI.BigInt(0), drop, mode);
                     value = BigDecimal.compactValFor(rb);
                     if (value !== BigDecimal.INFLATED) {
                         break;
@@ -1195,16 +1195,16 @@ export class BigDecimal {
             if (sdiff < 0) {
                 const raise = this.checkScale3(fst, -sdiff);
                 rscale = scale2;
-                fst = BigDecimal.bigMultiplyPowerTen3(fst!, raise);
+                fst = BigDecimal.bigMultiplyPowerTen3(fst ?? JSBI.BigInt(0), raise);
             } else {
                 const raise = this.checkScale3(snd, sdiff);
-                snd = BigDecimal.bigMultiplyPowerTen3(snd!, raise);
+                snd = BigDecimal.bigMultiplyPowerTen3(snd ?? JSBI.BigInt(0), raise);
             }
         }
-        const sum = JSBI.add(fst!, snd!);
-        const sameSignum = (fst! === BigDecimal.zeroBigInt && snd! === BigDecimal.zeroBigInt) ||
-            (JSBI.greaterThan(fst!, BigDecimal.zeroBigInt) && JSBI.greaterThan(snd!, BigDecimal.zeroBigInt)) ||
-            (JSBI.lessThan(fst!, BigDecimal.zeroBigInt) && JSBI.lessThan(snd!, BigDecimal.zeroBigInt));
+        const sum = JSBI.add(fst ?? JSBI.BigInt(0), snd ?? JSBI.BigInt(0));
+        const sameSignum = ((fst ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt && (snd ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt) ||
+            (JSBI.greaterThan(fst ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && JSBI.greaterThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt)) ||
+            (JSBI.lessThan(fst ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && JSBI.lessThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt));
         return sameSignum ? new BigDecimal(sum, BigDecimal.INFLATED, rscale, 0) : BigDecimal.fromBigInt5(sum, rscale, 0);
     }
 
@@ -1212,23 +1212,23 @@ export class BigDecimal {
     private static add2(xs: number, scale1: number, snd: JSBI, scale2: number) {
         let rscale = scale1;
         const sdiff = rscale - scale2;
-        const sameSigns = (snd! === BigDecimal.zeroBigInt && xs === 0) ||
-            (JSBI.greaterThan(snd!, BigDecimal.zeroBigInt) && xs > 0) ||
-            (JSBI.lessThan(snd!, BigDecimal.zeroBigInt) && xs < 0);
+        const sameSigns = ((snd ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt && xs === 0) ||
+            (JSBI.greaterThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && xs > 0) ||
+            (JSBI.lessThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && xs < 0);
         let sum;
         if (sdiff < 0) {
             const raise = this.checkScale2(xs, -sdiff);
             rscale = scale2;
             const scaledX = BigDecimal.integerMultiplyPowerTen(xs, raise);
             if (scaledX === BigDecimal.INFLATED) {
-                sum = JSBI.add(snd!, BigDecimal.bigMultiplyPowerTen2(xs, raise));
+                sum = JSBI.add(snd ?? JSBI.BigInt(0), BigDecimal.bigMultiplyPowerTen2(xs, raise));
             } else {
-                sum = JSBI.add(snd!, JSBI.BigInt(scaledX));
+                sum = JSBI.add(snd ?? JSBI.BigInt(0), JSBI.BigInt(scaledX));
             }
         } else { // if (sdiff > 0) {
             const raise = this.checkScale3(snd, sdiff);
             snd = BigDecimal.bigMultiplyPowerTen3(snd, raise);
-            sum = JSBI.add(snd!, JSBI.BigInt(xs));
+            sum = JSBI.add(snd ?? JSBI.BigInt(0), JSBI.BigInt(xs));
         }
         return (sameSigns) ?
             new BigDecimal(sum, BigDecimal.INFLATED, rscale, 0) : BigDecimal.fromBigInt5(sum, rscale, 0);
@@ -1309,7 +1309,7 @@ export class BigDecimal {
      */
     signum(): number {
         const intCompactSignum = this.intCompact > 0 ? 1 : (this.intCompact < 0 ? -1 : 0);
-        const intValSignum = BigDecimal.bigIntSignum(this.intVal!);
+        const intValSignum = BigDecimal.bigIntSignum(this.intVal ?? JSBI.BigInt(0));
         return this.intCompact !== BigDecimal.INFLATED ? intCompactSignum : intValSignum;
     }
 
@@ -1422,7 +1422,10 @@ export class BigDecimal {
                 JSBI.BigInt(this.intCompact)
             );
         else
-            return JSBI.multiply(this.intVal!, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(n)));
+            return JSBI.multiply(
+                this.intVal ?? JSBI.BigInt(0),
+                JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(n))
+            );
     }
 
     /** @internal */
@@ -1435,7 +1438,7 @@ export class BigDecimal {
     private static bigMultiplyPowerTen3(value: JSBI, n: number): JSBI {
         if (n <= 0) return value;
         if (n < BigDecimal.TEN_POWERS_TABLE.length) {
-            return JSBI.multiply(value!, JSBI.BigInt(BigDecimal.TEN_POWERS_TABLE[n]));
+            return JSBI.multiply(value ?? JSBI.BigInt(0), JSBI.BigInt(BigDecimal.TEN_POWERS_TABLE[n]));
         }
         return JSBI.multiply(JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(n)), value);
     }
@@ -1455,7 +1458,7 @@ export class BigDecimal {
             if (s !== BigDecimal.INFLATED)
                 result = BigDecimal.integerDigitLength(s);
             else
-                result = BigDecimal.bigDigitLength(this.intVal!);
+                result = BigDecimal.bigDigitLength(this.intVal ?? JSBI.BigInt(0));
             this._precision = result;
         }
         return result;
@@ -1489,14 +1492,14 @@ export class BigDecimal {
                 drop = prec - mcp;
                 while (drop > 0) {
                     scale = BigDecimal.checkScaleNonZero(scale - drop);
-                    intVal = BigDecimal.divideAndRoundByTenPow(intVal!, drop, mode);
+                    intVal = BigDecimal.divideAndRoundByTenPow(intVal ?? JSBI.BigInt(0), drop, mode);
                     wasDivided = true;
                     compactVal = BigDecimal.compactValFor(intVal);
                     if (compactVal !== BigDecimal.INFLATED) {
                         prec = BigDecimal.integerDigitLength(compactVal);
                         break;
                     }
-                    prec = BigDecimal.bigDigitLength(intVal!);
+                    prec = BigDecimal.bigDigitLength(intVal ?? JSBI.BigInt(0));
                     drop = prec - mcp;
                 }
             }
@@ -1636,16 +1639,16 @@ export class BigDecimal {
      */
     private static createAndStripZerosToMatchScale2(intVal: JSBI, scale: number, preferredScale: number): BigDecimal {
         let qr: JSBI[];
-        while (BigDecimal.bigIntCompareMagnitude(intVal!, JSBI.BigInt(10)) >= 0 && scale > preferredScale) {
-            if (JSBI.remainder(intVal!, BigDecimal.twoBigInt) === BigDecimal.oneBigInt)
+        while (BigDecimal.bigIntCompareMagnitude(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10)) >= 0 && scale > preferredScale) {
+            if (JSBI.remainder(intVal ?? JSBI.BigInt(0), BigDecimal.twoBigInt) === BigDecimal.oneBigInt)
                 break;
-            qr = [JSBI.divide(intVal!, JSBI.BigInt(10)), JSBI.remainder(intVal!, JSBI.BigInt(10))];
+            qr = [JSBI.divide(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10)), JSBI.remainder(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10))];
             if (BigDecimal.bigIntSignum(qr[1]) !== 0)
                 break;
             intVal = qr[0];
             scale = this.checkScale3(intVal, scale - 1);
         }
-        return BigDecimal.fromBigInt5(intVal!, scale, 0);
+        return BigDecimal.fromBigInt5(intVal ?? JSBI.BigInt(0), scale, 0);
     }
 
     /**
@@ -1725,7 +1728,7 @@ export class BigDecimal {
     negate(mc?: MathContext): BigDecimal {
         let result = this.intCompact === BigDecimal.INFLATED ?
             new BigDecimal(
-                JSBI.multiply(BigDecimal.minusOneBigInt, this.intVal!), BigDecimal.INFLATED, this._scale, this._precision
+                JSBI.multiply(BigDecimal.minusOneBigInt, this.intVal ?? JSBI.BigInt(0)), BigDecimal.INFLATED, this._scale, this._precision
             ) :
             BigDecimal.fromInteger2(-this.intCompact, this._scale, this._precision);
         if (mc) {
@@ -1754,13 +1757,13 @@ export class BigDecimal {
                 if (augend.intCompact !== BigDecimal.INFLATED) {
                     return BigDecimal.add3(this.intCompact, this._scale, augend.intCompact, augend._scale);
                 } else {
-                    return BigDecimal.add2(this.intCompact, this._scale, augend.intVal!, augend._scale);
+                    return BigDecimal.add2(this.intCompact, this._scale, augend.intVal ?? JSBI.BigInt(0), augend._scale);
                 }
             } else {
                 if (augend.intCompact !== BigDecimal.INFLATED) {
-                    return BigDecimal.add2(augend.intCompact, augend._scale, this.intVal!, this._scale);
+                    return BigDecimal.add2(augend.intCompact, augend._scale, this.intVal ?? JSBI.BigInt(0), this._scale);
                 } else {
-                    return BigDecimal.add1(this.intVal!, this._scale, augend.intVal!, augend._scale);
+                    return BigDecimal.add1(this.intVal ?? JSBI.BigInt(0), this._scale, augend.intVal ?? JSBI.BigInt(0), augend._scale);
                 }
             }
         }
@@ -1781,7 +1784,7 @@ export class BigDecimal {
             if (result._scale === preferredScale)
                 return result;
             else if (result._scale > preferredScale) {
-                return BigDecimal.stripZerosToMatchScale(result.intVal!, result.intCompact, result._scale, preferredScale);
+                return BigDecimal.stripZerosToMatchScale(result.intVal ?? JSBI.BigInt(0), result.intCompact, result._scale, preferredScale);
             } else { // result.scale < preferredScale
                 const precisionDiff = mc.precision - result.precision();
                 const scaleDiff = preferredScale - result._scale;
@@ -1823,7 +1826,7 @@ export class BigDecimal {
                     return BigDecimal.add3(this.intCompact, this._scale, -subtrahend.intCompact, subtrahend._scale);
                 } else {
                     return BigDecimal.add2(
-                        this.intCompact, this._scale, JSBI.multiply(BigDecimal.minusOneBigInt, subtrahend.intVal!), subtrahend._scale
+                        this.intCompact, this._scale, JSBI.multiply(BigDecimal.minusOneBigInt, subtrahend.intVal ?? JSBI.BigInt(0)), subtrahend._scale
                     );
                 }
             } else {
@@ -1831,10 +1834,10 @@ export class BigDecimal {
                     // Pair of subtrahend values given before pair of
                     // values from this BigDecimal to avoid need for
                     // method overloading on the specialized add method
-                    return BigDecimal.add2(-subtrahend.intCompact, subtrahend._scale, this.intVal!, this._scale);
+                    return BigDecimal.add2(-subtrahend.intCompact, subtrahend._scale, this.intVal ?? JSBI.BigInt(0), this._scale);
                 } else {
                     return BigDecimal.add1(
-                        this.intVal!, this._scale, JSBI.multiply(BigDecimal.minusOneBigInt, subtrahend.intVal!), subtrahend._scale
+                        this.intVal ?? JSBI.BigInt(0), this._scale, JSBI.multiply(BigDecimal.minusOneBigInt, subtrahend.intVal ?? JSBI.BigInt(0)), subtrahend._scale
                     );
                 }
             }
@@ -1861,13 +1864,13 @@ export class BigDecimal {
                 if ((multiplicand.intCompact !== BigDecimal.INFLATED)) {
                     return BigDecimal.multiply2(this.intCompact, multiplicand.intCompact, productScale);
                 } else {
-                    return BigDecimal.multiply3(this.intCompact, multiplicand.intVal!, productScale);
+                    return BigDecimal.multiply3(this.intCompact, multiplicand.intVal ?? JSBI.BigInt(0), productScale);
                 }
             } else {
                 if ((multiplicand.intCompact !== BigDecimal.INFLATED)) {
-                    return BigDecimal.multiply3(multiplicand.intCompact, this.intVal!, productScale);
+                    return BigDecimal.multiply3(multiplicand.intCompact, this.intVal ?? JSBI.BigInt(0), productScale);
                 } else {
-                    return BigDecimal.multiply4(this.intVal!, multiplicand.intVal!, productScale);
+                    return BigDecimal.multiply4(this.intVal ?? JSBI.BigInt(0), multiplicand.intVal ?? JSBI.BigInt(0), productScale);
                 }
             }
         }
@@ -1876,13 +1879,13 @@ export class BigDecimal {
             if ((multiplicand.intCompact !== BigDecimal.INFLATED)) {
                 return BigDecimal.multiplyAndRound1(this.intCompact, multiplicand.intCompact, productScale, mc);
             } else {
-                return BigDecimal.multiplyAndRound2(this.intCompact, multiplicand.intVal!, productScale, mc);
+                return BigDecimal.multiplyAndRound2(this.intCompact, multiplicand.intVal ?? JSBI.BigInt(0), productScale, mc);
             }
         } else {
             if ((multiplicand.intCompact !== BigDecimal.INFLATED)) {
-                return BigDecimal.multiplyAndRound2(multiplicand.intCompact, this.intVal!, productScale, mc);
+                return BigDecimal.multiplyAndRound2(multiplicand.intCompact, this.intVal ?? JSBI.BigInt(0), productScale, mc);
             } else {
-                return BigDecimal.multiplyAndRound3(this.intVal!, multiplicand.intVal!, productScale, mc);
+                return BigDecimal.multiplyAndRound3(this.intVal ?? JSBI.BigInt(0), multiplicand.intVal ?? JSBI.BigInt(0), productScale, mc);
             }
         }
     }
@@ -1933,13 +1936,13 @@ export class BigDecimal {
                         this.intCompact, this._scale, divisor.intCompact, divisor._scale, scale, roundingMode
                     );
                 } else {
-                    return BigDecimal.divide8(this.intCompact, this._scale, divisor.intVal!, divisor._scale, scale, roundingMode);
+                    return BigDecimal.divide8(this.intCompact, this._scale, divisor.intVal ?? JSBI.BigInt(0), divisor._scale, scale, roundingMode);
                 }
             } else {
                 if ((divisor.intCompact !== BigDecimal.INFLATED)) {
-                    return BigDecimal.divide9(this.intVal!, this._scale, divisor.intCompact, divisor._scale, scale, roundingMode);
+                    return BigDecimal.divide9(this.intVal ?? JSBI.BigInt(0), this._scale, divisor.intCompact, divisor._scale, scale, roundingMode);
                 } else {
-                    return BigDecimal.divide10(this.intVal!, this._scale, divisor.intVal!, divisor._scale, scale, roundingMode);
+                    return BigDecimal.divide10(this.intVal ?? JSBI.BigInt(0), this._scale, divisor.intVal ?? JSBI.BigInt(0), divisor._scale, scale, roundingMode);
                 }
             }
         }
@@ -2060,13 +2063,13 @@ export class BigDecimal {
             if (divisor.intCompact !== BigDecimal.INFLATED) {
                 return BigDecimal.divide2(this.intCompact, xscale, divisor.intCompact, yscale, preferredScale, mc);
             } else {
-                return BigDecimal.divide3(this.intCompact, xscale, divisor.intVal!, yscale, preferredScale, mc);
+                return BigDecimal.divide3(this.intCompact, xscale, divisor.intVal ?? JSBI.BigInt(0), yscale, preferredScale, mc);
             }
         } else {
             if (divisor.intCompact !== BigDecimal.INFLATED) {
-                return BigDecimal.divide4(this.intVal!, xscale, divisor.intCompact, yscale, preferredScale, mc);
+                return BigDecimal.divide4(this.intVal ?? JSBI.BigInt(0), xscale, divisor.intCompact, yscale, preferredScale, mc);
             } else {
-                return BigDecimal.divide5(this.intVal!, xscale, divisor.intVal!, yscale, preferredScale, mc);
+                return BigDecimal.divide5(this.intVal ?? JSBI.BigInt(0), xscale, divisor.intVal ?? JSBI.BigInt(0), yscale, preferredScale, mc);
             }
         }
     }
@@ -2094,12 +2097,12 @@ export class BigDecimal {
         if (x === 0) {
             return BigDecimal.zeroValueOf(scale);
         }
-        return new BigDecimal(JSBI.multiply(y!, JSBI.BigInt(x)), BigDecimal.INFLATED, scale, 0);
+        return new BigDecimal(JSBI.multiply(y ?? JSBI.BigInt(0), JSBI.BigInt(x)), BigDecimal.INFLATED, scale, 0);
     }
 
     /** @internal */
     private static multiply4(x: JSBI, y: JSBI, scale: number): BigDecimal {
-        return new BigDecimal(JSBI.multiply(x!, y!), BigDecimal.INFLATED, scale, 0);
+        return new BigDecimal(JSBI.multiply(x ?? JSBI.BigInt(0), y ?? JSBI.BigInt(0)), BigDecimal.INFLATED, scale, 0);
     }
 
     /**
@@ -2129,12 +2132,12 @@ export class BigDecimal {
         if (x === 0) {
             return BigDecimal.zeroValueOf(scale);
         }
-        return BigDecimal.doRound2(JSBI.multiply(y!, JSBI.BigInt(x)), scale, mc);
+        return BigDecimal.doRound2(JSBI.multiply(y ?? JSBI.BigInt(0), JSBI.BigInt(x)), scale, mc);
     }
 
     /** @internal */
     private static multiplyAndRound3(x: JSBI, y: JSBI, scale: number, mc: MathContext): BigDecimal {
-        return BigDecimal.doRound2(JSBI.multiply(x!, y!), scale, mc);
+        return BigDecimal.doRound2(JSBI.multiply(x ?? JSBI.BigInt(0), y ?? JSBI.BigInt(0)), scale, mc);
     }
 
     /** @internal */
@@ -2353,7 +2356,7 @@ export class BigDecimal {
             if (quotient._scale > 0) {
                 quotient = quotient.setScale(0, RoundingMode.DOWN);
                 quotient = BigDecimal.stripZerosToMatchScale(
-                    quotient.intVal!, quotient.intCompact, quotient._scale, preferredScale
+                    quotient.intVal ?? JSBI.BigInt(0), quotient.intCompact, quotient._scale, preferredScale
                 );
             }
 
@@ -2404,7 +2407,7 @@ export class BigDecimal {
             (precisionDiff = mc.precision - result.precision()) > 0) {
             return result.setScale(result._scale + Math.min(precisionDiff, preferredScale - result._scale));
         } else {
-            return BigDecimal.stripZerosToMatchScale(result.intVal!, result.intCompact, result._scale, preferredScale);
+            return BigDecimal.stripZerosToMatchScale(result.intVal ?? JSBI.BigInt(0), result.intCompact, result._scale, preferredScale);
         }
     }
 
@@ -2465,7 +2468,7 @@ export class BigDecimal {
                         (xs = BigDecimal.integerMultiplyPowerTen(xs, -sdiff)) === BigDecimal.INFLATED) &&
                     ys === BigDecimal.INFLATED) {
                     const rb = this.bigMultiplyPowerTen(-sdiff);
-                    return BigDecimal.bigIntCompareMagnitude(rb, val.intVal!);
+                    return BigDecimal.bigIntCompareMagnitude(rb, val.intVal ?? JSBI.BigInt(0));
                 }
             } else { // sdiff > 0
                 // The cases sdiff > Integer.MAX_INT_VALUE intentionally fall through.
@@ -2474,7 +2477,7 @@ export class BigDecimal {
                         (ys = BigDecimal.integerMultiplyPowerTen(ys, sdiff)) === BigDecimal.INFLATED) &&
                     xs === BigDecimal.INFLATED) {
                     const rb = val.bigMultiplyPowerTen(sdiff);
-                    return BigDecimal.bigIntCompareMagnitude(this.intVal!, rb);
+                    return BigDecimal.bigIntCompareMagnitude(this.intVal ?? JSBI.BigInt(0), rb);
                 }
             }
         }
@@ -2483,7 +2486,7 @@ export class BigDecimal {
         else if (ys !== BigDecimal.INFLATED)
             return 1;
         else
-            return BigDecimal.bigIntCompareMagnitude(this.intVal!, val.intVal!);
+            return BigDecimal.bigIntCompareMagnitude(this.intVal ?? JSBI.BigInt(0), val.intVal ?? JSBI.BigInt(0));
     }
 
     /**
@@ -2524,10 +2527,10 @@ export class BigDecimal {
         let xs = value.intCompact;
         if (s !== BigDecimal.INFLATED) {
             if (xs === BigDecimal.INFLATED)
-                xs = BigDecimal.compactValFor(value.intVal!);
+                xs = BigDecimal.compactValFor(value.intVal ?? JSBI.BigInt(0));
             return xs === s;
         } else if (xs !== BigDecimal.INFLATED)
-            return xs === BigDecimal.compactValFor(this.intVal!);
+            return xs === BigDecimal.compactValFor(this.intVal ?? JSBI.BigInt(0));
 
         return this.inflated() === value.inflated();
     }
@@ -2865,12 +2868,12 @@ export class BigDecimal {
      * @throws RangeError if scale from max or min safe integer range.
      */
     stripTrailingZeros(): BigDecimal {
-        if (this.intCompact === 0 || (this.intVal !== null && BigDecimal.bigIntSignum(this.intVal!) === 0)) {
+        if (this.intCompact === 0 || (this.intVal !== null && BigDecimal.bigIntSignum(this.intVal ?? JSBI.BigInt(0)) === 0)) {
             return BigDecimal.ZERO;
         } else if (this.intCompact !== BigDecimal.INFLATED) {
             return BigDecimal.createAndStripZerosToMatchScale(this.intCompact, this._scale, Number.MIN_SAFE_INTEGER);
         } else {
-            return BigDecimal.createAndStripZerosToMatchScale2(this.intVal!, this._scale, Number.MIN_SAFE_INTEGER);
+            return BigDecimal.createAndStripZerosToMatchScale2(this.intVal ?? JSBI.BigInt(0), this._scale, Number.MIN_SAFE_INTEGER);
         }
     }
 
@@ -3173,7 +3176,7 @@ export class BigDecimal {
         } else {
             if (newScale > oldScale) {
                 const raise = this.checkScale(newScale - oldScale);
-                const rb = BigDecimal.bigMultiplyPowerTen3(this.intVal!, raise);
+                const rb = BigDecimal.bigMultiplyPowerTen3(this.intVal ?? JSBI.BigInt(0), raise);
                 return new BigDecimal(
                     rb, BigDecimal.INFLATED, newScale, (this._precision > 0) ? this._precision + raise : 0
                 );
@@ -3183,11 +3186,11 @@ export class BigDecimal {
                 const drop = this.checkScale(oldScale - newScale);
                 if (drop < BigDecimal.TEN_POWERS_TABLE.length)
                     return BigDecimal.divideAndRound4(
-                        this.intVal!, BigDecimal.TEN_POWERS_TABLE[drop], newScale, roundingMode, newScale
+                        this.intVal ?? JSBI.BigInt(0), BigDecimal.TEN_POWERS_TABLE[drop], newScale, roundingMode, newScale
                     );
                 else
                     return BigDecimal.divideAndRound3(
-                        this.intVal!, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(drop)), newScale, roundingMode, newScale
+                        this.intVal ?? JSBI.BigInt(0), JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(drop)), newScale, roundingMode, newScale
                     );
             }
         }
@@ -3805,7 +3808,7 @@ export class BigDecimal {
      */
     private layoutString(sci: boolean): string {
         if (this._scale === 0) // zero scale is trivial
-            return (this.intCompact !== BigDecimal.INFLATED) ? this.intCompact.toString() : this.intVal!.toString();
+            return (this.intCompact !== BigDecimal.INFLATED) ? this.intCompact.toString() : (this.intVal ?? JSBI.BigInt(0)).toString();
 
         if (this._scale === 2 && this.intCompact >= 0 && this.intCompact < Number.MAX_SAFE_INTEGER) {
             // currency fast path
@@ -3820,7 +3823,7 @@ export class BigDecimal {
         if (this.intCompact !== BigDecimal.INFLATED) {
             coeff = Math.abs(this.intCompact).toString();
         } else {
-            coeff = BigDecimal.bigIntAbs(this.intVal!).toString();
+            coeff = BigDecimal.bigIntAbs(this.intVal ?? JSBI.BigInt(0)).toString();
         }
 
         // Construct a string.
@@ -3928,7 +3931,7 @@ export class BigDecimal {
             if (this.intCompact !== BigDecimal.INFLATED) {
                 return this.intCompact.toString();
             } else {
-                return this.intVal!.toString();
+                return (this.intVal ?? JSBI.BigInt(0)).toString();
             }
         }
         if (this._scale < 0) { // No decimal point
@@ -3940,7 +3943,7 @@ export class BigDecimal {
             if (this.intCompact !== BigDecimal.INFLATED) {
                 buf += this.intCompact.toString();
             } else {
-                buf += this.intVal!.toString();
+                buf += (this.intVal ?? JSBI.BigInt(0)).toString();
             }
             for (let i = 0; i < trailingZeros; i++) {
                 buf += '0';
@@ -3951,7 +3954,7 @@ export class BigDecimal {
         if (this.intCompact !== BigDecimal.INFLATED) {
             str = Math.abs(this.intCompact).toString();
         } else {
-            str = BigDecimal.bigIntAbs(this.intVal!).toString();
+            str = BigDecimal.bigIntAbs(this.intVal ?? JSBI.BigInt(0)).toString();
         }
         return BigDecimal.getValueString(this.signum(), str, this._scale);
     }

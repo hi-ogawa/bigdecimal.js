@@ -228,6 +228,24 @@ function transform(source: string, j: JSCodeshift): string {
   }
 
   //
+  // workaround non null assertion (essentially typing bugs in bigdecimal.ts)
+  //
+  //   x!  ⇒  x ?? JSBI.BigInt(0)
+  //
+  for (const p of $j.find(j.TSNonNullExpression).paths()) {
+    if (isBigInt(p.parent.value)) {
+      const { expression } = p.value;
+      p.replace(
+        j.logicalExpression(
+          "??",
+          expression,
+          j.callExpression(JSBI_BIGINT_EXPR, [j.numericLiteral(0)])
+        )
+      );
+    }
+  }
+
+  //
   // remove __BIGINT__ calls
   //
   for (const p of reverse($j.find(j.CallExpression).paths())) {
