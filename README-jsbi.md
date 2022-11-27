@@ -7,11 +7,14 @@ node -r esbuild-register misc/codemod-label-bigint.ts src/bigdecimal.ts src/bigd
 # replace bigint with JSBI
 node -r esbuild-register misc/codemod-jsbi.ts src/bigdecimal-label-bigint.ts src/bigdecimal-jsbi.ts
 
-# bundle with jsbi
-pnpm compile:jsbi
+# build
+pnpm jsbi:build
 
 # test (sqrt.js/pow.js are significantly slow)
 npx mocha --parallel --timeout 0 --require source-map-support/register 'test/**/*.js' -g 'TAG_SLOW' --invert
+
+# release
+pnpm jsbi:release
 ```
 
 ## references
