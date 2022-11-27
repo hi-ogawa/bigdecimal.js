@@ -4,11 +4,14 @@ const chai = require('chai');
 const testCases = require('../util/output/sqrtTestCases.json');
 chai.should();
 
-describe('Sqrt test', function () {
+describe('Sqrt test TAG_SLOW', function () {
 
     it('should calculate sqrt correctly', function () {
-        this.timeout(100000); // long test
-        for (const test of testCases) {
+        for (let i = 0; i < testCases.length; i++) {
+            if (process.env["PROGRESS"] && i % Number(process.env["PROGRESS"]) === 0) {
+                console.error(`[progress] ${i}/${testCases.length}`);
+            }
+            const test = testCases[i];
             const sqrtOp = () => {
                 return Big(test.args[0]).sqrt(
                     new MC(test.args[1], test.args[2])

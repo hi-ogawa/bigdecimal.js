@@ -1,4 +1,5 @@
-'use strict';
+'use strict';;
+const JSBI = require("jsbi");
 const { Big, MC, RoundingMode } = require('../../lib/bigdecimal.js');
 const chai = require('chai');
 chai.should();
@@ -66,11 +67,11 @@ describe('Add JDK', function () {
      */
     it('simple tests', function () {
         const bd1 = [
-            Big(BigInt('7812404666936930160'), 11),
-            Big(BigInt('7812404666936930160'), 12),
-            Big(BigInt('7812404666936930160'), 13),
+            Big(JSBI.BigInt('7812404666936930160'), 11),
+            Big(JSBI.BigInt('7812404666936930160'), 12),
+            Big(JSBI.BigInt('7812404666936930160'), 13),
         ];
-        const bd2 = Big(BigInt('2790000'), 1);
+        const bd2 = Big(JSBI.BigInt('2790000'), 1);
         const expectedResult = [
             Big('78403046.66936930160'),
             Big('8091404.666936930160'),

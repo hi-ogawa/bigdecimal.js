@@ -4,11 +4,14 @@ const chai = require('chai');
 const testCases = require('../util/output/powTestCases.json');
 chai.should();
 
-describe('Pow test', function () {
+describe('Pow test TAG_SLOW', function () {
 
     it('should calculate pow correctly', function () {
-        this.timeout(200000); // long test
-        for (const test of testCases) {
+        for (let i = 0; i < testCases.length; i++) {
+            if (process.env["PROGRESS"] && i % Number(process.env["PROGRESS"]) === 0) {
+                console.error(`[progress] ${i}/${testCases.length}`);
+            }
+            const test = testCases[i];
             const powOp = () => {
                 return Big(test.args[0]).pow(
                     test.args[1],

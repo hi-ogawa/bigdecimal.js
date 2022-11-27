@@ -1,4 +1,5 @@
-'use strict';
+'use strict';;
+const JSBI = require("jsbi");
 const { Big, MC, RoundingMode } = require('../lib/bigdecimal.js');
 const chai = require('chai');
 const should = chai.should();
@@ -6,23 +7,23 @@ const should = chai.should();
 describe('Constructor test', function () {
 
     it('should contruct from bigint', function () {
-        const big = Big(123n);
+        const big = Big(JSBI.BigInt("123"));
         big.scale().should.be.eq(0);
         big.precision().should.be.eq(3);
-        big.intVal.should.be.eq(123n);
+        big.intVal.should.be.eq(JSBI.BigInt("123"));
         big.intCompact.should.be.eq(123);
     });
 
     it('should contruct from bigint and scale', function () {
-        const big = Big(123n, 3);
+        const big = Big(JSBI.BigInt("123"), 3);
         big.scale().should.be.eq(3);
         big.precision().should.be.eq(3);
-        should.equal(big.intVal, 123n);
+        should.equal(big.intVal, JSBI.BigInt("123"));
         big.intCompact.should.be.eq(123);
     });
 
     it('should contruct from bigint, scale and math context', function () {
-        const big = Big(123n, 3, MC(5, RoundingMode.HALF_DOWN));
+        const big = Big(JSBI.BigInt("123"), 3, MC(5, RoundingMode.HALF_DOWN));
         big.scale().should.be.eq(3);
         big.precision().should.be.eq(3);
         should.equal(big.intVal, null);
@@ -30,7 +31,7 @@ describe('Constructor test', function () {
     });
 
     it('should contruct from bigint and math context', function () {
-        const big = Big(123n, undefined, MC(5, RoundingMode.HALF_DOWN));
+        const big = Big(JSBI.BigInt("123"), undefined, MC(5, RoundingMode.HALF_DOWN));
         big.scale().should.be.eq(0);
         big.precision().should.be.eq(3);
         should.equal(big.intVal, null);
@@ -47,7 +48,7 @@ describe('Constructor test', function () {
         const big2 = Big('1000000000000000000000');
         big2.scale().should.be.eq(0);
         big2.precision().should.be.eq(22);
-        big2.intVal.should.be.eq(1000000000000000000000n);
+        big2.intVal.should.be.eq(JSBI.BigInt("1000000000000000000000"));
         big2.intCompact.should.be.eq(Number.MIN_SAFE_INTEGER);
     });
 
@@ -126,14 +127,14 @@ describe('Constructor test', function () {
         const big = Big(Number.MAX_SAFE_INTEGER + 1, 1);
         big.scale().should.be.eq(1);
         big.precision().should.be.eq(16);
-        should.equal(big.intVal, 9007199254740992n);
+        should.equal(big.intVal, JSBI.BigInt("9007199254740992"));
         big.intCompact.should.be.eq(Number.MIN_SAFE_INTEGER);
         big.toPlainString().should.be.eq('900719925474099.2');
 
         const big2 = Big(Number.MAX_SAFE_INTEGER + 1, -1);
         big2.scale().should.be.eq(-1);
         big2.precision().should.be.eq(16);
-        should.equal(big2.intVal, 9007199254740992n);
+        should.equal(big2.intVal, JSBI.BigInt("9007199254740992"));
         big2.intCompact.should.be.eq(Number.MIN_SAFE_INTEGER);
         big2.toPlainString().should.be.eq('90071992547409920');
     });
@@ -142,7 +143,7 @@ describe('Constructor test', function () {
         const big = Big(Number.MAX_VALUE); // 1.7976931348623157e+308
         big.scale().should.be.eq(-292);
         big.precision().should.be.eq(17);
-        should.equal(big.intVal, 17976931348623157n);
+        should.equal(big.intVal, JSBI.BigInt("17976931348623157"));
         big.intCompact.should.be.eq(Number.MIN_SAFE_INTEGER);
     });
 

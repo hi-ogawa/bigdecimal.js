@@ -1,13 +1,9 @@
 {
-  "name": "bigdecimal.js",
-  "version": "1.3.0",
-  "description": "A BigDecimal implementation with native BigInts",
-  "exports": {
-    "import": "./lib/bigdecimal.mjs",
-    "require": "./lib/bigdecimal.js"
-  },
-  "main": "lib/bigdecimal.js",
-  "module": "lib/bigdecimal.mjs",
+  "name": "@hiogawa/bigdecimal.js",
+  "version": "1.0.0-pre.0",
+  "description": "JSBI port of bigdecimal.js",
+  "type": "commonjs",
+  "main": "./lib/bigdecimal.js",
   "scripts": {
     "test": "mocha --require ts-node/register --require source-map-support/register -t 100000 test/**/**/*.js",
     "coverage": "nyc --reporter=lcov npm run test",
@@ -15,6 +11,10 @@
     "compile": " npm run compile:cjs && npm run compile:esm && npm run prepareESM",
     "compile:esm": "tsc --module es2020 --outDir lib/esm",
     "compile:cjs": "tsc --module commonjs --outDir lib",
+    "jsbi:build": "pnpm jsbi:build:js && pnpm jsbi:build:dts",
+    "jsbi:build:js": "esbuild ./src/bigdecimal-jsbi.ts --outfile=lib/bigdecimal.js --format=cjs --sourcemap",
+    "jsbi:build:dts": "tsc --outDir lib --noEmit false --emitDeclarationOnly && cp -f lib/src/bigdecimal-jsbi.d.ts lib/bigdecimal.d.ts",
+    "jsbi:release": "npm publish --access public",
     "clean": "rimraf docs lib",
     "predocs": "rimraf docs",
     "docs": "typedoc --options typedoc.json",
@@ -37,29 +37,21 @@
   ],
   "files": [
     "lib/bigdecimal.js",
-    "lib/bigdecimal.mjs",
     "lib/bigdecimal.d.ts"
   ],
   "types": "lib/bigdecimal.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/srknzl/bigdecimal.js.git"
-  },
-  "author": {
-    "name": "Serkan Özel",
-    "email": "serkanozel380@gmail.com",
-    "url": "https://github.com/srknzl"
+    "url": "git+https://github.com/hi-ogawa/bigdecimal.js.git"
   },
   "license": "Apache 2.0",
-  "bugs": {
-    "url": "https://github.com/srknzl/bigdecimal.js/issues"
-  },
   "engines": {
     "node": ">=10.4.0"
   },
-  "homepage": "https://srknzl.github.io/bigdecimal.js/",
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/jscodeshift": "^0.11.5",
+    "@types/node": "^16",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "benchmark": "^2.1.4",
@@ -68,13 +60,22 @@
     "bignumber.js": "^9.1.0",
     "chai": "^4.3",
     "decimal.js": "^10.4.2",
+    "esbuild": "^0.15.15",
+    "esbuild-register": "^3.4.1",
     "eslint": "^8.28.0",
+    "jsbi": "^4.3.0",
+    "jscodeshift": "^0.14.0",
     "mocha": "^10.1.0",
     "nyc": "^15.1.0",
+    "recast": "^0.21.5",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.21",
+    "ts-morph": "^17.0.1",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.21",
     "typescript": "^4.8.4"
+  },
+  "volta": {
+    "node": "16.18.1"
   }
 }

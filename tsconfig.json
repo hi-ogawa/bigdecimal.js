@@ -72,6 +72,9 @@
     "forceConsistentCasingInFileNames": true        /* Disallow inconsistently-cased references to the same file. */
   },
   "files": [
+    "misc/example.ts",
+    "src/bigdecimal-label-bigint.ts",
+    "src/bigdecimal-jsbi.ts",
     "src/bigdecimal.ts"
   ],
   "exclude": ["lib", "node_modules"]
