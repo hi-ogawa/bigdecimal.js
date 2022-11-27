@@ -1202,7 +1202,7 @@ export class BigDecimal {
             }
         }
         const sum = JSBI.add(fst ?? JSBI.BigInt(0), snd ?? JSBI.BigInt(0));
-        const sameSignum = ((fst ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt && (snd ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt) ||
+        const sameSignum = (JSBI.equal(fst ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && JSBI.equal(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt)) ||
             (JSBI.greaterThan(fst ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && JSBI.greaterThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt)) ||
             (JSBI.lessThan(fst ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && JSBI.lessThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt));
         return sameSignum ? new BigDecimal(sum, BigDecimal.INFLATED, rscale, 0) : BigDecimal.fromBigInt5(sum, rscale, 0);
@@ -1212,7 +1212,7 @@ export class BigDecimal {
     private static add2(xs: number, scale1: number, snd: JSBI, scale2: number) {
         let rscale = scale1;
         const sdiff = rscale - scale2;
-        const sameSigns = ((snd ?? JSBI.BigInt(0)) === BigDecimal.zeroBigInt && xs === 0) ||
+        const sameSigns = (JSBI.equal(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && xs === 0) ||
             (JSBI.greaterThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && xs > 0) ||
             (JSBI.lessThan(snd ?? JSBI.BigInt(0), BigDecimal.zeroBigInt) && xs < 0);
         let sum;
@@ -1328,7 +1328,7 @@ export class BigDecimal {
      * @internal
      */
     private static compactValFor(value: JSBI): number {
-        if (JSBI.greaterThan(value, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) || JSBI.lessThan(value, JSBI.BigInt(Number.MIN_SAFE_INTEGER))) {
+        if (JSBI.greaterThan(JSBI.BigInt(value), JSBI.BigInt(Number.MAX_SAFE_INTEGER)) || JSBI.lessThan(JSBI.BigInt(value), JSBI.BigInt(Number.MIN_SAFE_INTEGER))) {
             return BigDecimal.INFLATED;
         }
         return JSBI.toNumber(value);
@@ -1359,7 +1359,7 @@ export class BigDecimal {
     private static checkScale3(intVal: JSBI, val: number): number {
         if (val > BigDecimal.MAX_INT_VALUE || val < BigDecimal.MIN_INT_VALUE) {
             val = (val > BigDecimal.MAX_INT_VALUE) ? BigDecimal.MAX_INT_VALUE : BigDecimal.MIN_INT_VALUE;
-            if (intVal !== BigDecimal.zeroBigInt) {
+            if (JSBI.notEqual(intVal, BigDecimal.zeroBigInt)) {
                 throw new RangeError(val > 0 ? 'Scale too high' : 'Scale too less');
             }
         }
@@ -1640,7 +1640,10 @@ export class BigDecimal {
     private static createAndStripZerosToMatchScale2(intVal: JSBI, scale: number, preferredScale: number): BigDecimal {
         let qr: JSBI[];
         while (BigDecimal.bigIntCompareMagnitude(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10)) >= 0 && scale > preferredScale) {
-            if (JSBI.remainder(intVal ?? JSBI.BigInt(0), BigDecimal.twoBigInt) === BigDecimal.oneBigInt)
+            if (JSBI.equal(
+                JSBI.remainder(intVal ?? JSBI.BigInt(0), BigDecimal.twoBigInt),
+                BigDecimal.oneBigInt
+            ))
                 break;
             qr = [JSBI.divide(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10)), JSBI.remainder(intVal ?? JSBI.BigInt(0), JSBI.BigInt(10))];
             if (BigDecimal.bigIntSignum(qr[1]) !== 0)
@@ -2532,7 +2535,7 @@ export class BigDecimal {
         } else if (xs !== BigDecimal.INFLATED)
             return xs === BigDecimal.compactValFor(this.intVal ?? JSBI.BigInt(0));
 
-        return this.inflated() === value.inflated();
+        return JSBI.equal(this.inflated(), value.inflated());
     }
 
     /**
@@ -2882,7 +2885,7 @@ export class BigDecimal {
      * @internal
      */
     private isPowerOfTen(): boolean {
-        return this.unscaledValue() === BigDecimal.oneBigInt;
+        return JSBI.equal(this.unscaledValue(), BigDecimal.oneBigInt);
     }
 
     /**
@@ -3421,7 +3424,7 @@ export class BigDecimal {
             x = JSBI.multiply(BigDecimal.minusOneBigInt, x);
         if (JSBI.lessThan(y, BigDecimal.zeroBigInt))
             y = JSBI.multiply(BigDecimal.minusOneBigInt, y);
-        return (JSBI.lessThan(x, y)) ? -1 : ((x === y) ? 0 : 1);
+        return (JSBI.lessThan(x, y)) ? -1 : ((JSBI.equal(x, y)) ? 0 : 1);
     }
 
     /**
@@ -3478,10 +3481,10 @@ export class BigDecimal {
         let mq = JSBI.divide(bdividend, bdivisor);
         const mr = JSBI.remainder(bdividend, bdivisor);
         // record remainder is zero or not
-        const isRemainderZero = mr === BigDecimal.zeroBigInt;
+        const isRemainderZero = JSBI.equal(mr, BigDecimal.zeroBigInt);
         if (!isRemainderZero) {
             if (BigDecimal.needIncrement2(bdivisor, roundingMode, qsign, mq, mr)) {
-                mq = JSBI.add(JSBI.BigInt(JSBI.BigInt(mq)), BigDecimal.oneBigInt);
+                mq = JSBI.add(mq, BigDecimal.oneBigInt);
             }
             return BigDecimal.bigIntToBigDecimal(mq, qsign, scale);
         } else {
@@ -3507,7 +3510,7 @@ export class BigDecimal {
     ): boolean {
         const cmpFracHalf = BigDecimal.compareHalf(mr, mdivisor);
         return BigDecimal.commonNeedIncrement(
-            roundingMode, qsign, cmpFracHalf, JSBI.remainder(mq, BigDecimal.twoBigInt) === BigDecimal.oneBigInt
+            roundingMode, qsign, cmpFracHalf, JSBI.equal(JSBI.remainder(mq, BigDecimal.twoBigInt), BigDecimal.oneBigInt)
         );
     }
 
@@ -3560,7 +3563,7 @@ export class BigDecimal {
         const qsign = divisorNegative ? -dividendSignum : dividendSignum;
         if (!isRemainderZero) {
             if (BigDecimal.needIncrement3(ldivisor, roundingMode, qsign, mq, mr)) {
-                mq = JSBI.add(JSBI.BigInt(JSBI.BigInt(mq)), BigDecimal.oneBigInt);
+                mq = JSBI.add(mq, BigDecimal.oneBigInt);
             }
             return BigDecimal.bigIntToBigDecimal(mq, qsign, scale);
         } else {
@@ -3590,7 +3593,7 @@ export class BigDecimal {
         }
 
         return BigDecimal.commonNeedIncrement(
-            roundingMode, qsign, cmpFracHalf, JSBI.remainder(mq, BigDecimal.twoBigInt) === BigDecimal.oneBigInt
+            roundingMode, qsign, cmpFracHalf, JSBI.equal(JSBI.remainder(mq, BigDecimal.twoBigInt), BigDecimal.oneBigInt)
         );
     }
 
@@ -4043,7 +4046,7 @@ export class BigDecimal {
         const qsign = divisorNegative ? (dividendSignum * -1) : dividendSignum;
         if (!isRemainderZero) {
             if (BigDecimal.needIncrement3(ldivisor, roundingMode, qsign, mq, r)) {
-                mq = JSBI.add(JSBI.BigInt(JSBI.BigInt(mq)), BigDecimal.oneBigInt);
+                mq = JSBI.add(mq, BigDecimal.oneBigInt);
             }
         }
         return JSBI.multiply(mq, JSBI.BigInt(qsign));
@@ -4063,11 +4066,11 @@ export class BigDecimal {
 
         let mq = JSBI.divide(bdividend, bdivisor);
         const mr = JSBI.remainder(bdividend, bdivisor);
-        const isRemainderZero = mr === BigDecimal.zeroBigInt; // record remainder is zero or not
+        const isRemainderZero = JSBI.equal(mr, BigDecimal.zeroBigInt); // record remainder is zero or not
         const qsign = (bdividendSignum !== bdivisorSignum) ? -1 : 1; // quotient sign
         if (!isRemainderZero) {
             if (BigDecimal.needIncrement2(bdivisor, roundingMode, qsign, mq, mr)) {
-                mq = JSBI.add(JSBI.BigInt(JSBI.BigInt(mq)), BigDecimal.oneBigInt);
+                mq = JSBI.add(mq, BigDecimal.oneBigInt);
             }
         }
         return JSBI.multiply(mq, JSBI.BigInt(qsign));

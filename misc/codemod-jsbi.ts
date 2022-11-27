@@ -3,6 +3,9 @@ import type { JSCodeshift } from "jscodeshift";
 import process from "node:process";
 import fs from "node:fs";
 import assert from "node:assert";
+import * as recast from "recast";
+import { Printable } from "jscodeshift";
+import { ASTNode } from "jscodeshift";
 
 // cli usage:
 //   node -r esbuild-register misc/codemod-jsbi.ts src/bigdecimal-label-bigint.ts src/bigdecimal-jsbi.ts
@@ -101,7 +104,7 @@ function transform(source: string, j: JSCodeshift): string {
             left,
             j.binaryExpression(
               ASSIGN_OP_MAPPING[operator],
-              j.callExpression(JSBI_BIGINT_EXPR, [left]),
+              j.callExpression(j.identifier("__BIGINT__"), [left]),
               right
             )
           )
@@ -137,6 +140,8 @@ function transform(source: string, j: JSCodeshift): string {
     "<=": "lessThanOrEqual",
     ">": "greaterThan",
     ">=": "greaterThanOrEqual",
+    "===": "equal",
+    "!==": "notEqual",
   };
 
   for (const p of reverse($j.find(j.BinaryExpression).paths())) {
@@ -149,25 +154,26 @@ function transform(source: string, j: JSCodeshift): string {
             [left, right]
           )
         );
+      } else {
+        console.error("[warn:unexpected-operator]", ...logNode(p.value));
       }
-    } else if (isBigInt(right)) {
-      if (operator in BIN_OP_MAPPING) {
+    } else if (isBigInt(right) || isBigInt(left)) {
+      // most likely incorrect typing
+      console.error("[warn:mixed-argument-types]", ...logNode(p.value));
+
+      // handle only two easy-to-fix ad-hoc cases (the orignal source bigdecimal.ts should be fixed)
+      if (["<", ">"].includes(operator)) {
         p.replace(
           j.callExpression(
             j.memberExpression(JSBI_ID, j.identifier(BIN_OP_MAPPING[operator])),
-            [j.callExpression(JSBI_BIGINT_EXPR, [left]), right]
-          )
-        );
-      }
-    } else if (isBigInt(left)) {
-      if (operator in BIN_OP_MAPPING) {
-        p.replace(
-          j.callExpression(
-            j.memberExpression(
-              j.identifier("JSBI"),
-              j.identifier(BIN_OP_MAPPING[operator])
-            ),
-            [left, j.callExpression(JSBI_BIGINT_EXPR, [right])]
+            [
+              isBigInt(right)
+                ? left
+                : j.callExpression(JSBI_BIGINT_EXPR, [left]),
+              isBigInt(right)
+                ? right
+                : j.callExpression(JSBI_BIGINT_EXPR, [right]),
+            ]
           )
         );
       }
@@ -195,7 +201,7 @@ function transform(source: string, j: JSCodeshift): string {
   }
 
   //
-  // fix unsupported JSBI.valueOf
+  // fix redundant/unsupported JSBI.valueOf
   //
   //   x.valueOf()  ⇒  x
   //   Number(x)    ⇒  x.toNumber()
@@ -262,6 +268,13 @@ function transform(source: string, j: JSCodeshift): string {
 // traverse in reverse order so that inner expressions will be processed/replaced first e.g. for `(x + y) + z`
 function reverse<T>(it: Iterable<T>): T[] {
   return [...it].reverse();
+}
+
+function logNode(node: ASTNode & Printable): string[] {
+  return [
+    (node.loc?.start.line ?? "?") + ":" + (node.loc?.start.column ?? "?"),
+    recast.print(node).code,
+  ];
 }
 
 if (require.main === module) {
