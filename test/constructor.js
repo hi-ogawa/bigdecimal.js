@@ -3,7 +3,8 @@ const { Big, MC, RoundingMode } = require('../lib/bigdecimal.js');
 const chai = require('chai');
 const should = chai.should();
 
-describe('Constructor test', function () {
+// native bigint required
+describe.skip('Constructor test', function () {
 
     it('should contruct from bigint', function () {
         const big = Big(123n);

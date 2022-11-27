@@ -3,7 +3,9 @@ const { Big, MC, MathContext, RoundingMode } = require('../../lib/bigdecimal.js'
 const chai = require('chai');
 chai.should();
 
-describe('Zero scaling JDK', function () {
+// native bigint required
+describe.skip('Zero scaling JDK', function () {
+    return;
 
     const zeros = new Array(23);
     for (let i = 0; i < 21; i++) {
