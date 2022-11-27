@@ -4,7 +4,7 @@ const chai = require('chai');
 const testCases = require('../util/output/sqrtTestCases.json');
 chai.should();
 
-describe('Sqrt test', function () {
+describe('Sqrt test TAG_SLOW', function () {
 
     it('should calculate sqrt correctly', function () {
         for (let i = 0; i < testCases.length; i++) {

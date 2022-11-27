@@ -13,5 +13,20 @@ jobs:
           node-version: 16
       - run: pnpm i
       - run: pnpm compile:jsbi
-      - name: mocha
-        run: PROGRESS=1000 npx mocha --require source-map-support/register -t 0 'test/**/*.js'
+      - name: mocha-fast
+        run: npx mocha --timeout 0 --require source-map-support/register 'test/**/*.js' --grep TAG_SLOW --invert
+
+  test-slow:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 7
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: pnpm i
+      - run: pnpm compile:jsbi
+      - name: mocha-slow
+        run: PROGRESS=1000 npx mocha --timeout 0 --require source-map-support/register 'test/**/*.js' --grep TAG_SLOW

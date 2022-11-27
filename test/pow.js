@@ -4,7 +4,7 @@ const chai = require('chai');
 const testCases = require('../util/output/powTestCases.json');
 chai.should();
 
-describe('Pow test', function () {
+describe('Pow test TAG_SLOW', function () {
 
     it('should calculate pow correctly', function () {
         for (let i = 0; i < testCases.length; i++) {
