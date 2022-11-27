@@ -7,7 +7,6 @@ chai.should();
 describe('Pow test', function () {
 
     it('should calculate pow correctly', function () {
-        this.timeout(200000); // long test
         for (const test of testCases) {
             const powOp = () => {
                 return Big(test.args[0]).pow(

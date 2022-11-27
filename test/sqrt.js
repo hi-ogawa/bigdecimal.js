@@ -7,7 +7,6 @@ chai.should();
 describe('Sqrt test', function () {
 
     it('should calculate sqrt correctly', function () {
-        this.timeout(100000); // long test
         for (const test of testCases) {
             const sqrtOp = () => {
                 return Big(test.args[0]).sqrt(
