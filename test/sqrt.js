@@ -4,8 +4,7 @@ const chai = require('chai');
 const testCases = require('../util/output/sqrtTestCases.json');
 chai.should();
 
-// too slow
-describe.skip('Sqrt test', function () {
+describe('Sqrt test', function () {
 
     it('should calculate sqrt correctly', function () {
         this.timeout(100000); // long test
